@@ -1,0 +1,12 @@
+m=5 n=10
+User 0 Server 3
+User 1 Server 1
+User 2 Server -1
+User 3 Server 4
+User 4 Server 1
+User 5 Server 3
+User 6 Server -1
+User 7 Server 1
+User 8 Server 3
+User 9 Server 0
+Stable? true
