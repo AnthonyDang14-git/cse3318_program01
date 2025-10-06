@@ -1,3 +1,5 @@
+// Anthony Dang 1002178920
+
 #include "driver.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,12 +130,74 @@ int index_of(int *arr, int len, int val) {
 
 // Gale-Shapley
 Matching *stable_gale_shapley(Matching *problem) {
-    //TODO implement
+    int m = problem->m;
+    int n = problem->n;
+
+    int *next_proposal = malloc(n * sizeof(int));
+    for(int i = 0; i < n; i++){
+        next_proposal[i] = 0;
+    }
+
+    int unmatched_users = n;
+    while(unmatched_users > 0){
+        for (int i = 0; i < n; i++){
+            if(problem->user_matching[i] != -1){
+                continue;
+            }
+
+            if(next_proposal[i] >= m){
+                unmatched_users--;
+                continue;
+            }
+
+            int server = problem->user_preference[i][next_proposal[i]];
+            next_proposal[i]++;
+
+            if(problem->server_slots[server] > 0){
+                problem->user_matching[i] = server;
+                problem->server_slots[server]--;
+                unmatched_users--;
+            } else {
+                int worst_user = -1;
+                int worst_rank = -1;
+                for(int j = 0; j < n; j++){
+                    if(problem->user_matching[j] == server){
+                        int rank = index_of(problem->server_preference[server], n, j);
+                        if(rank > worst_rank){
+                            worst_rank = rank;
+                            worst_user = j;
+                        }
+                    }
+                }
+
+                int u_rank = index_of(problem->server_preference[server], n, i);
+                if(u_rank < worst_rank){
+                    problem->user_matching[worst_user] = -1;
+                    problem->user_matching[i] = server;
+                }
+            }
+        }
+    }
+    free(next_proposal);
     return problem;
 }
 
 int is_stable(Matching *match) {
-   //TODO Implement
+    for(int i = 0; i < match->n; i++){
+        int server1 = match->user_matching[i];
+        for(int j = 0; j < match->n; j++){
+            if(i == j){
+                continue;
+            }
+            int server2 = match->user_matching[j];
+            int user_prefers_server2 = index_of(match->user_preference[i], match->m, server2) < index_of(match->user_preference[i], match->m, server1);
+            int server2_prefers_user = index_of(match->server_preference[server2], match->n, i) < index_of(match->server_preference[server2], match->n, j);
+            if(user_prefers_server2 && server2_prefers_user){
+                printf("Blocking pair: User %d and Server %d\n", i, j);
+                return 0;
+            }
+        }
+    }
     return 1;
 }
 
